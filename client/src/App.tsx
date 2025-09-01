@@ -87,12 +87,18 @@ function App() {
   }, []);
 
   const filteredPlugins = useMemo(() => {
-    if (!debouncedSearchTerm.trim() || !searchIndex.current || plugins.length === 0) {
+    if (
+      !debouncedSearchTerm.trim() ||
+      !searchIndex.current ||
+      plugins.length === 0
+    ) {
       return plugins;
     }
 
     try {
-      const results = searchIndex.current.search(debouncedSearchTerm, { limit: 1000 });
+      const results = searchIndex.current.search(debouncedSearchTerm, {
+        limit: 1000,
+      });
       const uniqueResults = Array.from(new Set(results)) as number[];
       return uniqueResults
         .map((index) => plugins[index])
