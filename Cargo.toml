@@ -1,0 +1,18 @@
+[package]
+name = "neovim-directory-indexer"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+anyhow = "1.0.99"
+async_from = "0.2.0"
+chrono = "0.4.41"
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+octocrab = "0.44.1"
+pulldown-cmark = "0.12.2"
+regex = "1.11.1"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.143"
+tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
