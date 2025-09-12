@@ -5,7 +5,7 @@
 **neovim.directory** is yet another index for the [Neovim](https://neovim.io/)
 plugin ecosystem.
 
-<img width="1341" height="1171" alt="Screenshot 2025-09-01 at 2 31 30 PM" src="https://github.com/user-attachments/assets/beddf389-f8be-46c1-a5c6-7cf1a8c320ac" />
+<img width="1400" height="1244" alt="Screenshot 2025-09-12 at 6 49 07 PM" src="https://github.com/user-attachments/assets/700b288b-97cc-466e-907a-fe66a5a8f088" />
 
 Plugin data is primarily sourced from the
 [awesome-neovim](https://github.com/rockerBOO/awesome-neovim) repository,
