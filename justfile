@@ -21,7 +21,7 @@ fmt-web:
   prettier --write .
 
 index:
-  cargo run -- --output ./client/public/plugins.json
+  cargo run index --output ./client/public/plugins.json
 
 typeshare:
   typeshare . -l typescript -o client/src/lib/types.ts
