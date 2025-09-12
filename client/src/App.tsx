@@ -10,7 +10,16 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Index } from 'flexsearch';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, ExternalLink, Eye, Search, Star } from 'lucide-react';
+import {
+  Calendar,
+  ExternalLink,
+  Eye,
+  Flame,
+  Grid3X3,
+  Search,
+  Sparkles,
+  Star,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const useDebounce = (value: string, delay: number) => {
@@ -48,6 +57,9 @@ function App() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [loading, setLoading] = useState(true);
   const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_PAGE);
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | 'new' | 'hot'
+  >('all');
   const searchIndex = useRef<Index>();
   const observerRef = useRef<IntersectionObserver>();
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -87,12 +99,23 @@ function App() {
   }, []);
 
   const filteredPlugins = useMemo(() => {
+    let pluginsToFilter = plugins;
+
+    if (selectedCategory === 'new') {
+      pluginsToFilter = [...plugins].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    } else if (selectedCategory === 'hot') {
+      pluginsToFilter = [...plugins].sort((a, b) => b.stars - a.stars);
+    }
+
     if (
       !debouncedSearchTerm.trim() ||
       !searchIndex.current ||
       plugins.length === 0
     ) {
-      return plugins;
+      return pluginsToFilter;
     }
 
     try {
@@ -100,14 +123,25 @@ function App() {
         limit: 1000,
       });
       const uniqueResults = Array.from(new Set(results)) as number[];
-      return uniqueResults
+      const searchFiltered = uniqueResults
         .map((index) => plugins[index])
         .filter((plugin) => plugin != null);
+
+      if (selectedCategory === 'new') {
+        return searchFiltered.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      } else if (selectedCategory === 'hot') {
+        return searchFiltered.sort((a, b) => b.stars - a.stars);
+      }
+
+      return searchFiltered;
     } catch (error) {
       console.error('Search error:', error);
       return [];
     }
-  }, [plugins, debouncedSearchTerm]);
+  }, [plugins, debouncedSearchTerm, selectedCategory]);
 
   const displayedPlugins = useMemo(() => {
     return filteredPlugins.slice(0, displayedCount);
@@ -149,7 +183,7 @@ function App() {
 
   useEffect(() => {
     setDisplayedCount(ITEMS_PER_PAGE);
-  }, [filteredPlugins]);
+  }, [filteredPlugins, selectedCategory]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -219,6 +253,51 @@ function App() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className='pl-10'
             />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className='mb-6'
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
+        >
+          <div className='flex justify-center'>
+            <div className='flex gap-2'>
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedCategory === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                <Grid3X3 className='h-4 w-4' />
+                All
+              </button>
+              <button
+                onClick={() => setSelectedCategory('new')}
+                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedCategory === 'new'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                <Sparkles className='h-4 w-4' />
+                New
+              </button>
+              <button
+                onClick={() => setSelectedCategory('hot')}
+                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedCategory === 'hot'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                <Flame className='h-4 w-4' />
+                Hot
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -313,10 +392,17 @@ function App() {
                           <span>{formatNumber(plugin.watchers)}</span>
                         </div>
                       </div>
-                      <div className='flex items-center gap-1'>
-                        <Calendar className='h-3 w-3' />
-                        <span>Updated {formatDate(plugin.updated_at)}</span>
-                      </div>
+                      {selectedCategory === 'new' ? (
+                        <div className='flex items-center gap-1'>
+                          <Calendar className='h-3 w-3' />
+                          <span>Created {formatDate(plugin.created_at)}</span>
+                        </div>
+                      ) : (
+                        <div className='flex items-center gap-1'>
+                          <Calendar className='h-3 w-3' />
+                          <span>Updated {formatDate(plugin.updated_at)}</span>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
