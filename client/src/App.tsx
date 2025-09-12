@@ -340,7 +340,7 @@ function App() {
                       </a>
                     </div>
                     <CardDescription className='line-clamp-2 text-sm min-h-[2.5rem]'>
-                      {plugin.description || 'No description available'}
+                      {plugin.description}
                     </CardDescription>
                   </CardHeader>
 
