@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { formatDate, formatNumber } from './lib/utils';
+
 interface Plugin {
   name: string;
   description: string;
@@ -173,22 +175,6 @@ function App() {
   useEffect(() => {
     setDisplayedCount(ITEMS_PER_PAGE);
   }, [filteredPlugins, selectedCategory]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)}k`;
-    }
-
-    return num.toString();
-  };
 
   if (loading) {
     return <LoadingIndicator text='Loading plugins...' />;
