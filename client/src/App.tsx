@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { ModeToggle } from '@/components/mode-toggle';
+import { useDebounce } from '@/hooks/use-debounce';
 import { Index } from 'flexsearch';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -23,7 +24,6 @@ import {
   Star,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDebounce } from '@/hooks/use-debounce';
 
 interface Plugin {
   name: string;
@@ -213,13 +213,13 @@ function App() {
       <div className='container mx-auto px-4 py-8'>
         <div className='fixed top-4 right-4 z-50 flex items-center gap-2'>
           <a
-            href="https://github.com/terror/neovim.directory"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 size-9"
+            href='https://github.com/terror/neovim.directory'
+            target='_blank'
+            rel='noopener noreferrer'
+            className="focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex size-9 shrink-0 items-center justify-center gap-2 rounded-md border text-sm font-medium whitespace-nowrap shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
-            <Github className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">View on GitHub</span>
+            <Github className='h-[1.2rem] w-[1.2rem]' />
+            <span className='sr-only'>View on GitHub</span>
           </a>
           <ModeToggle />
         </div>
@@ -244,7 +244,7 @@ function App() {
           transition={{ duration: 0.4, delay: 0.15, ease: 'easeOut' }}
         >
           <div className='relative mx-auto max-w-md'>
-            <Search className='text-muted-foreground absolute top-3 left-3 h-4 w-4' />
+            <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
               type='text'
               placeholder='Search plugins...'
