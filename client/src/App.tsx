@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/loading-indicator';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -38,18 +39,19 @@ interface Plugin {
 
 const ITEMS_PER_PAGE = 20;
 
+type Category = 'all' | 'new' | 'hot';
+
 function App() {
+  const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_PAGE);
+  const [loading, setLoading] = useState(true);
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('all');
+
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [loading, setLoading] = useState(true);
-  const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_PAGE);
-  const [selectedCategory, setSelectedCategory] = useState<
-    'all' | 'new' | 'hot'
-  >('all');
-  const searchIndex = useRef<Index>();
-  const observerRef = useRef<IntersectionObserver>();
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver>();
+  const searchIndex = useRef<Index>();
 
   useEffect(() => {
     const loadPlugins = async () => {
@@ -184,23 +186,12 @@ function App() {
     if (num >= 1000) {
       return `${(num / 1000).toFixed(1)}k`;
     }
+
     return num.toString();
   };
 
   if (loading) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-          className='flex flex-col items-center gap-4'
-        >
-          <Spinner size='lg' />
-          <p className='text-muted-foreground text-lg'>Loading plugins...</p>
-        </motion.div>
-      </div>
-    );
+    return <LoadingIndicator text='Loading plugins...' />;
   }
 
   return (
