@@ -39,6 +39,7 @@ function App() {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
+  const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -169,6 +170,18 @@ function App() {
   useEffect(() => {
     setDisplayedCount(ITEMS_PER_PAGE);
   }, [filteredPlugins, selectedCategory]);
+
+  const toggleTopicExpansion = (pluginKey: string) => {
+    setExpandedTopics(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pluginKey)) {
+        newSet.delete(pluginKey);
+      } else {
+        newSet.add(pluginKey);
+      }
+      return newSet;
+    });
+  };
 
   if (loading) {
     return <LoadingIndicator text='Loading plugins...' />;
@@ -335,20 +348,34 @@ function App() {
                     <div className='mb-3 min-h-[1.5rem]'>
                       {plugin.topics && plugin.topics.length > 0 && (
                         <div className='flex flex-wrap gap-0.5'>
-                          {plugin.topics.slice(0, 3).map((topic) => (
-                            <Badge
-                              key={topic}
-                              variant='secondary'
-                              className='text-xs'
-                            >
-                              {topic}
-                            </Badge>
-                          ))}
-                          {plugin.topics.length > 3 && (
-                            <Badge variant='outline' className='text-xs'>
-                              +{plugin.topics.length - 3}
-                            </Badge>
-                          )}
+                          {(() => {
+                            const pluginKey = `${plugin.name}-${plugin.url}-${index}`;
+                            const isExpanded = expandedTopics.has(pluginKey);
+                            const topicsToShow = isExpanded ? plugin.topics : plugin.topics.slice(0, 3);
+                            
+                            return (
+                              <>
+                                {topicsToShow.map((topic) => (
+                                  <Badge
+                                    key={topic}
+                                    variant='secondary'
+                                    className='text-xs'
+                                  >
+                                    {topic}
+                                  </Badge>
+                                ))}
+                                {plugin.topics.length > 3 && (
+                                  <Badge 
+                                    variant='outline' 
+                                    className='text-xs cursor-pointer hover:bg-accent'
+                                    onClick={() => toggleTopicExpansion(pluginKey)}
+                                  >
+                                    {isExpanded ? 'Show less' : `+${plugin.topics.length - 3}`}
+                                  </Badge>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
