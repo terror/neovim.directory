@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { useDebounce } from '@/hooks/use-debounce';
+import { Plugin } from '@/lib/types';
 import { Index } from 'flexsearch';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -27,17 +28,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { formatDate, formatNumber } from './lib/utils';
-
-interface Plugin {
-  name: string;
-  description: string;
-  created_at: string;
-  stars: number;
-  topics: string[];
-  updated_at: string;
-  url: string;
-  watchers: number;
-}
 
 const ITEMS_PER_PAGE = 20;
 
@@ -95,7 +85,8 @@ function App() {
     if (selectedCategory === 'new') {
       pluginsToFilter = [...plugins].sort(
         (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
       );
     } else if (selectedCategory === 'hot') {
       pluginsToFilter = [...plugins].sort((a, b) => b.stars - a.stars);
@@ -113,7 +104,9 @@ function App() {
       const results = searchIndex.current.search(debouncedSearchTerm, {
         limit: 1000,
       });
+
       const uniqueResults = Array.from(new Set(results)) as number[];
+
       const searchFiltered = uniqueResults
         .map((index) => plugins[index])
         .filter((plugin) => plugin != null);
@@ -121,7 +114,8 @@ function App() {
       if (selectedCategory === 'new') {
         return searchFiltered.sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.createdAt || 0).getTime() -
+            new Date(a.createdAt || 0).getTime()
         );
       } else if (selectedCategory === 'hot') {
         return searchFiltered.sort((a, b) => b.stars - a.stars);
@@ -338,24 +332,26 @@ function App() {
                   </CardHeader>
 
                   <CardContent className='flex-grow'>
-                    <div className='mb-4'>
-                      <div className='flex flex-wrap gap-1'>
-                        {plugin.topics.slice(0, 3).map((topic) => (
-                          <Badge
-                            key={topic}
-                            variant='secondary'
-                            className='text-xs'
-                          >
-                            {topic}
-                          </Badge>
-                        ))}
-                        {plugin.topics.length > 3 && (
-                          <Badge variant='outline' className='text-xs'>
-                            +{plugin.topics.length - 3}
-                          </Badge>
-                        )}
+                    {plugin.topics && (
+                      <div className='mb-4'>
+                        <div className='flex flex-wrap gap-1'>
+                          {plugin.topics.slice(0, 3).map((topic) => (
+                            <Badge
+                              key={topic}
+                              variant='secondary'
+                              className='text-xs'
+                            >
+                              {topic}
+                            </Badge>
+                          ))}
+                          {plugin.topics.length > 3 && (
+                            <Badge variant='outline' className='text-xs'>
+                              +{plugin.topics.length - 3}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className='text-muted-foreground space-y-2 text-xs'>
                       <div className='flex items-center justify-between'>
@@ -368,16 +364,18 @@ function App() {
                           <span>{formatNumber(plugin.watchers)}</span>
                         </div>
                       </div>
-                      {selectedCategory === 'new' ? (
+                      {selectedCategory === 'new' && plugin.createdAt ? (
                         <div className='flex items-center gap-1'>
                           <Calendar className='h-3 w-3' />
-                          <span>Created {formatDate(plugin.created_at)}</span>
+                          <span>Created {formatDate(plugin.createdAt)}</span>
                         </div>
                       ) : (
-                        <div className='flex items-center gap-1'>
-                          <Calendar className='h-3 w-3' />
-                          <span>Updated {formatDate(plugin.updated_at)}</span>
-                        </div>
+                        plugin.updatedAt && (
+                          <div className='flex items-center gap-1'>
+                            <Calendar className='h-3 w-3' />
+                            <span>Updated {formatDate(plugin.updatedAt)}</span>
+                          </div>
+                        )
                       )}
                     </div>
                   </CardContent>

@@ -22,3 +22,6 @@ fmt-web:
 
 index:
   cargo run -- --output ./client/public/plugins.json
+
+typeshare:
+  typeshare . -l typescript -o client/src/lib/types.ts

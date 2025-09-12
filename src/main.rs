@@ -11,6 +11,7 @@ use {
   std::{
     backtrace::BacktraceStatus, fs, path::PathBuf, process, sync::OnceLock,
   },
+  typeshare::typeshare,
 };
 
 static OCTOCRAB: OnceLock<Octocrab> = OnceLock::new();
@@ -30,12 +31,16 @@ extern crate dotenv_codegen;
 type Result<T = (), E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+#[typeshare]
 struct Plugin {
   name: String,
   description: Option<String>,
+  #[typeshare(serialized_as = "Option<String>")]
   created_at: Option<DateTime<Utc>>,
   stars: u32,
   topics: Option<Vec<String>>,
+  #[typeshare(serialized_as = "Option<String>")]
   updated_at: Option<DateTime<Utc>>,
   url: String,
   watchers: u32,
