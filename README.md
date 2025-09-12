@@ -6,3 +6,26 @@
 plugin ecosystem.
 
 <img width="1341" height="1171" alt="Screenshot 2025-09-01 at 2 31 30 PM" src="https://github.com/user-attachments/assets/beddf389-f8be-46c1-a5c6-7cf1a8c320ac" />
+
+Plugin data is primarily sourced from the
+[awesome-neovim](https://github.com/rockerBOO/awesome-neovim) repository,
+however we provide tools for adding plugins not present in that repository.
+
+To re-run the index, simply execute the following:
+
+```bash
+cargo run -- --output ./client/public/plugins.json
+```
+
+Or, if you have `just` installed on your machine:
+
+```bash
+just index
+```
+
+**n.b.** This requires you to have a GitHub access token set in the environment.
+Refer to `.env.example` for how you should set this token.
+
+## Prior Art
+
+This project was inspired by tools like [store.nvim](https://nvim.store/).

@@ -4,6 +4,7 @@ export EDITOR := 'nvim'
 
 alias d := dev
 alias f := fmt
+alias i := index
 
 default:
   just --list
@@ -18,3 +19,6 @@ fmt-indexer:
 
 fmt-web:
   prettier --write .
+
+index:
+  cargo run -- --output ./client/public/plugins.json

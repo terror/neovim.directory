@@ -8,6 +8,7 @@ publish = false
 anyhow = "1.0.99"
 async_from = "0.2.0"
 chrono = "0.4.41"
+clap = { version = "4.5.47", features = ["derive"] }
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
 octocrab = "0.44.1"

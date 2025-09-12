@@ -2,12 +2,15 @@ use {
   anyhow::{Error, anyhow},
   async_from::{AsyncTryFrom, async_trait},
   chrono::{DateTime, Utc},
+  clap::Parser as Clap,
   dotenv::dotenv,
   octocrab::Octocrab,
   pulldown_cmark::{Event, Parser, Tag, TagEnd},
   regex::Regex,
   serde::Serialize,
-  std::{backtrace::BacktraceStatus, fs, process, sync::OnceLock},
+  std::{
+    backtrace::BacktraceStatus, fs, path::PathBuf, process, sync::OnceLock,
+  },
 };
 
 static OCTOCRAB: OnceLock<Octocrab> = OnceLock::new();
@@ -45,23 +48,23 @@ impl AsyncTryFrom<Repository> for Plugin {
   async fn async_try_from(repository: Repository) -> Result<Self, Self::Error> {
     let octocrab = get_octocrab();
 
-    let repo = octocrab
+    let fetched_repository = octocrab
       .repos(&repository.user, &repository.name)
       .get()
       .await?;
 
     Ok(Plugin {
-      name: repo.name,
-      description: repo.description,
-      topics: repo.topics,
-      created_at: repo.created_at,
-      stars: repo.stargazers_count.unwrap_or(0),
-      updated_at: repo.updated_at,
+      name: fetched_repository.name,
+      description: fetched_repository.description,
+      topics: fetched_repository.topics,
+      created_at: fetched_repository.created_at,
+      stars: fetched_repository.stargazers_count.unwrap_or(0),
+      updated_at: fetched_repository.updated_at,
       url: format!(
         "https://github.com/{}/{}",
         repository.user, repository.name
       ),
-      watchers: repo.watchers_count.unwrap_or(0),
+      watchers: fetched_repository.watchers_count.unwrap_or(0),
     })
   }
 }
@@ -95,94 +98,102 @@ impl Repository {
   }
 }
 
-async fn parse_readme(content: String) -> Result<Vec<Repository>> {
-  let parser = Parser::new(&content);
-
-  let mut repositories = Vec::new();
-
-  let mut current_header = None;
-  let mut in_list = false;
-  let mut current_item_text = String::new();
-  let mut collecting_item = false;
-
-  for event in parser {
-    match event {
-      Event::Start(Tag::Heading { .. }) => {
-        current_header = None;
-      }
-      Event::Text(text) if current_header.is_none() => {
-        current_header = Some(text.to_string());
-      }
-      Event::Start(Tag::List(_)) => {
-        in_list = true;
-      }
-      Event::End(TagEnd::List(_)) => {
-        in_list = false;
-      }
-      Event::Start(Tag::Item) if in_list => {
-        collecting_item = true;
-        current_item_text.clear();
-      }
-      Event::End(TagEnd::Item) if collecting_item => {
-        if !current_item_text.trim().is_empty() {
-          let re = Regex::new(r"([^/\s]+)/([^/\s)]+)").unwrap();
-
-          if let Some(captures) = re.captures(&current_item_text) {
-            let user = captures.get(1).unwrap().as_str();
-
-            let repo = captures.get(2).unwrap().as_str();
-
-            repositories.push(Repository {
-              user: user.into(),
-              name: repo.into(),
-            });
-          }
-        }
-
-        collecting_item = false;
-      }
-      Event::Text(text) if collecting_item => {
-        current_item_text.push_str(&text);
-      }
-      _ => {}
-    }
-  }
-
-  Ok(repositories)
+#[derive(Clap, Debug)]
+struct Arguments {
+  #[clap(short, long, default_value = "plugins.json")]
+  output: PathBuf,
 }
 
-async fn run() -> Result {
-  let repository = Repository {
-    name: "awesome-neovim".into(),
-    user: "rockerBOO".into(),
-  };
+impl Arguments {
+  async fn run(self) -> Result {
+    let repository = Repository {
+      name: "awesome-neovim".into(),
+      user: "rockerBOO".into(),
+    };
 
-  let repositories = parse_readme(repository.readme().await?).await?;
+    let repositories = Self::parse_readme(repository.readme().await?).await?;
 
-  let mut plugins = Vec::new();
+    let mut plugins = Vec::new();
 
-  for repository in repositories {
-    match Plugin::async_try_from(repository.clone()).await {
-      Ok(plugin) => {
-        println!("✓ {}", plugin.name);
-        plugins.push(plugin);
-      }
-      Err(error) => {
-        println!("𐄂 {}: {error}", repository.name)
+    for repository in repositories {
+      match Plugin::async_try_from(repository.clone()).await {
+        Ok(plugin) => {
+          println!("✓ {}", plugin.name);
+          plugins.push(plugin);
+        }
+        Err(error) => {
+          println!("𐄂 {}: {error}", repository.name)
+        }
       }
     }
+
+    fs::write(self.output, serde_json::to_string(&plugins)?)?;
+
+    Ok(())
   }
 
-  fs::write("plugins.json", serde_json::to_string(&plugins)?)?;
+  async fn parse_readme(content: String) -> Result<Vec<Repository>> {
+    let parser = Parser::new(&content);
 
-  Ok(())
+    let mut repositories = Vec::new();
+
+    let mut current_header = None;
+    let mut in_list = false;
+    let mut current_item_text = String::new();
+    let mut collecting_item = false;
+
+    for event in parser {
+      match event {
+        Event::Start(Tag::Heading { .. }) => {
+          current_header = None;
+        }
+        Event::Text(text) if current_header.is_none() => {
+          current_header = Some(text.to_string());
+        }
+        Event::Start(Tag::List(_)) => {
+          in_list = true;
+        }
+        Event::End(TagEnd::List(_)) => {
+          in_list = false;
+        }
+        Event::Start(Tag::Item) if in_list => {
+          collecting_item = true;
+          current_item_text.clear();
+        }
+        Event::End(TagEnd::Item) if collecting_item => {
+          if !current_item_text.trim().is_empty() {
+            let re = Regex::new(r"([^/\s]+)/([^/\s)]+)").unwrap();
+
+            if let Some(captures) = re.captures(&current_item_text) {
+              let user = captures.get(1).unwrap().as_str();
+
+              let repo = captures.get(2).unwrap().as_str();
+
+              repositories.push(Repository {
+                user: user.into(),
+                name: repo.into(),
+              });
+            }
+          }
+
+          collecting_item = false;
+        }
+        Event::Text(text) if collecting_item => {
+          current_item_text.push_str(&text);
+        }
+        _ => {}
+      }
+    }
+
+    Ok(repositories)
+  }
 }
 
 #[tokio::main]
 async fn main() {
   dotenv().ok();
 
-  if let Err(error) = run().await {
+  if let Err(error) = Arguments::parse().run().await {
     eprintln!("error: {error}");
 
     for (i, error) in error.chain().skip(1).enumerate() {
