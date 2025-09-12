@@ -326,15 +326,15 @@ function App() {
                         <ExternalLink className='h-4 w-4' />
                       </a>
                     </div>
-                    <CardDescription className='line-clamp-2 text-sm'>
-                      {plugin.description}
+                    <CardDescription className='line-clamp-2 text-sm min-h-[2.5rem]'>
+                      {plugin.description || 'No description available'}
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className='flex-grow'>
-                    {plugin.topics && (
-                      <div className='mb-4'>
-                        <div className='flex flex-wrap gap-1'>
+                  <CardContent className='flex-grow flex flex-col'>
+                    <div className='mb-3 min-h-[1.5rem]'>
+                      {plugin.topics && plugin.topics.length > 0 && (
+                        <div className='flex flex-wrap gap-0.5'>
                           {plugin.topics.slice(0, 3).map((topic) => (
                             <Badge
                               key={topic}
@@ -350,10 +350,10 @@ function App() {
                             </Badge>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    <div className='text-muted-foreground space-y-2 text-xs'>
+                    <div className='text-muted-foreground space-y-2 text-xs mt-auto'>
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center gap-1'>
                           <Star className='h-3 w-3' />
@@ -364,19 +364,21 @@ function App() {
                           <span>{formatNumber(plugin.watchers)}</span>
                         </div>
                       </div>
-                      {selectedCategory === 'new' && plugin.createdAt ? (
-                        <div className='flex items-center gap-1'>
-                          <Calendar className='h-3 w-3' />
-                          <span>Created {formatDate(plugin.createdAt)}</span>
-                        </div>
-                      ) : (
-                        plugin.updatedAt && (
-                          <div className='flex items-center gap-1'>
+                      <div className='flex items-center gap-1 min-h-[1rem]'>
+                        {selectedCategory === 'new' && plugin.createdAt ? (
+                          <>
+                            <Calendar className='h-3 w-3' />
+                            <span>Created {formatDate(plugin.createdAt)}</span>
+                          </>
+                        ) : plugin.updatedAt ? (
+                          <>
                             <Calendar className='h-3 w-3' />
                             <span>Updated {formatDate(plugin.updatedAt)}</span>
-                          </div>
-                        )
-                      )}
+                          </>
+                        ) : (
+                          <span className='text-muted-foreground/50'>No date info</span>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
