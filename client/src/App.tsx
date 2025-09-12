@@ -1,3 +1,4 @@
+import { Categories } from '@/components/categories';
 import { LoadingIndicator } from '@/components/loading-indicator';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
@@ -18,11 +19,8 @@ import {
   Calendar,
   ExternalLink,
   Eye,
-  Flame,
   Github,
-  Grid3X3,
   Search,
-  Sparkles,
   Star,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -172,7 +170,7 @@ function App() {
   }, [filteredPlugins, selectedCategory]);
 
   const toggleTopicExpansion = (pluginKey: string) => {
-    setExpandedTopics(prev => {
+    setExpandedTopics((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(pluginKey)) {
         newSet.delete(pluginKey);
@@ -245,43 +243,10 @@ function App() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
         >
-          <div className='flex justify-center'>
-            <div className='flex gap-2'>
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  selectedCategory === 'all'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                }`}
-              >
-                <Grid3X3 className='h-4 w-4' />
-                All
-              </button>
-              <button
-                onClick={() => setSelectedCategory('new')}
-                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  selectedCategory === 'new'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                }`}
-              >
-                <Sparkles className='h-4 w-4' />
-                New
-              </button>
-              <button
-                onClick={() => setSelectedCategory('hot')}
-                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  selectedCategory === 'hot'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                }`}
-              >
-                <Flame className='h-4 w-4' />
-                Hot
-              </button>
-            </div>
-          </div>
+          <Categories
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
         </motion.div>
 
         <div className='text-muted-foreground mb-6 text-center text-sm'>
@@ -339,20 +304,22 @@ function App() {
                         <ExternalLink className='h-4 w-4' />
                       </a>
                     </div>
-                    <CardDescription className='line-clamp-2 text-sm min-h-[2.5rem]'>
+                    <CardDescription className='line-clamp-2 min-h-[2.5rem] text-sm'>
                       {plugin.description}
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className='flex-grow flex flex-col'>
+                  <CardContent className='flex flex-grow flex-col'>
                     <div className='mb-3 min-h-[1.5rem]'>
                       {plugin.topics && plugin.topics.length > 0 && (
                         <div className='flex flex-wrap gap-0.5'>
                           {(() => {
                             const pluginKey = `${plugin.name}-${plugin.url}-${index}`;
                             const isExpanded = expandedTopics.has(pluginKey);
-                            const topicsToShow = isExpanded ? plugin.topics : plugin.topics.slice(0, 3);
-                            
+                            const topicsToShow = isExpanded
+                              ? plugin.topics
+                              : plugin.topics.slice(0, 3);
+
                             return (
                               <>
                                 {topicsToShow.map((topic) => (
@@ -365,12 +332,16 @@ function App() {
                                   </Badge>
                                 ))}
                                 {plugin.topics.length > 3 && (
-                                  <Badge 
-                                    variant='outline' 
-                                    className='text-xs cursor-pointer hover:bg-accent'
-                                    onClick={() => toggleTopicExpansion(pluginKey)}
+                                  <Badge
+                                    variant='outline'
+                                    className='hover:bg-accent cursor-pointer text-xs'
+                                    onClick={() =>
+                                      toggleTopicExpansion(pluginKey)
+                                    }
                                   >
-                                    {isExpanded ? 'Show less' : `+${plugin.topics.length - 3}`}
+                                    {isExpanded
+                                      ? 'Show less'
+                                      : `+${plugin.topics.length - 3}`}
                                   </Badge>
                                 )}
                               </>
@@ -380,7 +351,7 @@ function App() {
                       )}
                     </div>
 
-                    <div className='text-muted-foreground space-y-2 text-xs mt-auto'>
+                    <div className='text-muted-foreground mt-auto space-y-2 text-xs'>
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center gap-1'>
                           <Star className='h-3 w-3' />
@@ -391,7 +362,7 @@ function App() {
                           <span>{formatNumber(plugin.watchers)}</span>
                         </div>
                       </div>
-                      <div className='flex items-center gap-1 min-h-[1rem]'>
+                      <div className='flex min-h-[1rem] items-center gap-1'>
                         {selectedCategory === 'new' && plugin.createdAt ? (
                           <>
                             <Calendar className='h-3 w-3' />
@@ -403,7 +374,9 @@ function App() {
                             <span>Updated {formatDate(plugin.updatedAt)}</span>
                           </>
                         ) : (
-                          <span className='text-muted-foreground/50'>No date info</span>
+                          <span className='text-muted-foreground/50'>
+                            No date info
+                          </span>
                         )}
                       </div>
                     </div>
