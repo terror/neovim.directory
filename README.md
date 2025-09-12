@@ -14,17 +14,21 @@ however we provide tools for adding plugins not present in that repository.
 To re-run the index, simply execute the following:
 
 ```bash
-cargo run -- --output ./client/public/plugins.json
+cargo run index
 ```
 
-Or, if you have `just` installed on your machine:
+To add a custom plugin, you can:
 
 ```bash
-just index
+cargo run add <plugin>
 ```
 
-**n.b.** This requires you to have a GitHub access token set in the environment.
-Refer to `.env.example` for how you should set this token.
+Where `<plugin>` is a string of the form `username/repository_name`, where
+`username` is the GitHub username of the owner of the GitHub repository with
+name `repository_name`. For instance, `folke/lazy.nvim` is a valid value here.
+
+**n.b.** These commands require you to have a GitHub access token set in the
+environment. Refer to `.env.example` for how you should set this token.
 
 ## Prior Art
 

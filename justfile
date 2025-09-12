@@ -9,6 +9,9 @@ alias i := index
 default:
   just --list
 
+add-plugin plugin:
+  cargo run add {{ plugin }}
+
 dev:
   bun run dev
 
@@ -21,7 +24,7 @@ fmt-web:
   prettier --write .
 
 index:
-  cargo run index --output ./client/public/plugins.json
+  cargo run index
 
 typeshare:
   typeshare . -l typescript -o client/src/lib/types.ts

@@ -9,6 +9,6 @@ export interface Plugin {
   stars: number;
   topics?: string[];
   updatedAt?: string;
-  url: string;
+  user: string;
   watchers: number;
 }

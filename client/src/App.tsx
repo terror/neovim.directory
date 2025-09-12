@@ -265,7 +265,7 @@ function App() {
           <AnimatePresence mode='wait'>
             {displayedPlugins.map((plugin, index) => (
               <motion.div
-                key={`${plugin.name}-${plugin.url}-${index}`}
+                key={`${plugin.user}-${plugin.name}-${index}`}
                 layout
                 initial={{ opacity: 0 }}
                 animate={{
@@ -293,10 +293,10 @@ function App() {
                   <CardHeader className='flex-shrink-0'>
                     <div className='flex items-start justify-between'>
                       <CardTitle className='text-lg font-semibold'>
-                        {plugin.name}
+                        {plugin.user}/{plugin.name}
                       </CardTitle>
                       <a
-                        href={plugin.url}
+                        href={`https://github.com/${plugin.user}/${plugin.name}`}
                         target='_blank'
                         rel='noopener noreferrer'
                         className='text-muted-foreground hover:text-foreground transition-colors'
@@ -314,7 +314,7 @@ function App() {
                       {plugin.topics && plugin.topics.length > 0 && (
                         <div className='flex flex-wrap gap-0.5'>
                           {(() => {
-                            const pluginKey = `${plugin.name}-${plugin.url}-${index}`;
+                            const pluginKey = `${plugin.user}-${plugin.name}-${index}`;
                             const isExpanded = expandedTopics.has(pluginKey);
                             const topicsToShow = isExpanded
                               ? plugin.topics

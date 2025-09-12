@@ -11,9 +11,10 @@ use {
   octocrab::Octocrab,
   pulldown_cmark::{Event, Parser, Tag, TagEnd},
   regex::Regex,
-  serde::Serialize,
+  serde::{Deserialize, Serialize},
   std::{
-    backtrace::BacktraceStatus, fs, path::PathBuf, process, sync::OnceLock,
+    backtrace::BacktraceStatus, collections::HashSet, fs, path::PathBuf,
+    process, sync::OnceLock,
   },
   typeshare::typeshare,
 };
@@ -25,6 +26,8 @@ mod arguments;
 mod plugin;
 mod repository;
 mod subcommand;
+
+const PLUGIN_FILE_PATH: &str = "client/public/plugins.json";
 
 static OCTOCRAB: OnceLock<Octocrab> = OnceLock::new();
 

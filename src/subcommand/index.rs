@@ -2,42 +2,60 @@ use super::*;
 
 #[derive(Clap, Debug)]
 pub(crate) struct Index {
-  #[clap(short, long, default_value = "plugins.json")]
+  #[clap(short, long, default_value = PLUGIN_FILE_PATH)]
   output: PathBuf,
 }
 
 impl Index {
   pub(crate) async fn run(self) -> Result {
+    let existing_plugins = if self.output.exists() {
+      serde_json::from_str::<Vec<Plugin>>(&fs::read_to_string(&self.output)?)?
+    } else {
+      Vec::new()
+    };
+
     let repository = Repository {
       name: "awesome-neovim".into(),
       user: "rockerBOO".into(),
     };
 
-    let repositories = Self::parse_readme(repository.readme().await?).await?;
+    let mut repositories =
+      Self::parse_readme(repository.readme().await?).await?;
 
-    let mut plugins = Vec::new();
+    let preserved_repositories = existing_plugins
+      .into_iter()
+      .map(|plugin| plugin.into())
+      .filter(|repository| !repositories.contains(repository))
+      .collect::<Vec<Repository>>();
+
+    for preserved_repository in preserved_repositories {
+      repositories.insert(preserved_repository);
+    }
+
+    let mut indexed_plugins = HashSet::new();
 
     for repository in repositories {
       match Plugin::async_try_from(repository.clone()).await {
-        Ok(plugin) => {
-          println!("✓ {}", plugin.name);
-          plugins.push(plugin);
+        Ok(plugin) if !indexed_plugins.contains(&plugin) => {
+          println!("✓ {}/{}", plugin.user, plugin.name);
+          indexed_plugins.insert(plugin);
         }
+        Ok(_) => {}
         Err(error) => {
-          println!("𐄂 {}: {error}", repository.name)
+          println!("𐄂 {}/{}: {error}", repository.user, repository.name)
         }
       }
     }
 
-    fs::write(self.output, serde_json::to_string(&plugins)?)?;
+    fs::write(self.output, serde_json::to_string(&indexed_plugins)?)?;
 
     Ok(())
   }
 
-  async fn parse_readme(content: String) -> Result<Vec<Repository>> {
+  async fn parse_readme(content: String) -> Result<HashSet<Repository>> {
     let parser = Parser::new(&content);
 
-    let mut repositories = Vec::new();
+    let mut repositories = HashSet::new();
 
     let mut current_header = None;
     let mut in_list = false;
@@ -71,7 +89,7 @@ impl Index {
 
               let repo = captures.get(2).unwrap().as_str();
 
-              repositories.push(Repository {
+              repositories.insert(Repository {
                 user: user.into(),
                 name: repo.into(),
               });

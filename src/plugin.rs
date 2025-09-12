@@ -1,18 +1,18 @@
 use super::*;
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[typeshare]
 pub(crate) struct Plugin {
   pub(crate) name: String,
-  pub(crate) description: Option<String>,
   #[typeshare(serialized_as = "Option<String>")]
   pub(crate) created_at: Option<DateTime<Utc>>,
+  pub(crate) description: Option<String>,
   pub(crate) stars: u32,
   pub(crate) topics: Option<Vec<String>>,
   #[typeshare(serialized_as = "Option<String>")]
   pub(crate) updated_at: Option<DateTime<Utc>>,
-  pub(crate) url: String,
+  pub(crate) user: String,
   pub(crate) watchers: u32,
 }
 
@@ -30,16 +30,28 @@ impl AsyncTryFrom<Repository> for Plugin {
 
     Ok(Plugin {
       name: fetched_repository.name,
-      description: fetched_repository.description,
-      topics: fetched_repository.topics,
       created_at: fetched_repository.created_at,
+      description: fetched_repository.description,
       stars: fetched_repository.stargazers_count.unwrap_or(0),
+      topics: fetched_repository.topics,
       updated_at: fetched_repository.updated_at,
-      url: format!(
-        "https://github.com/{}/{}",
-        repository.user, repository.name
-      ),
+      user: repository.user,
       watchers: fetched_repository.watchers_count.unwrap_or(0),
     })
+  }
+}
+
+impl Into<Repository> for Plugin {
+  fn into(self) -> Repository {
+    Repository {
+      name: self.name,
+      user: self.user,
+    }
+  }
+}
+
+impl PartialEq for Plugin {
+  fn eq(&self, other: &Self) -> bool {
+    self.name == other.name && self.user == other.user
   }
 }
