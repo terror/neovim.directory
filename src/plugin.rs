@@ -36,7 +36,10 @@ impl AsyncTryFrom<Repository> for Plugin {
       topics: fetched_repository.topics,
       updated_at: fetched_repository.updated_at,
       user: repository.user,
-      watchers: fetched_repository.watchers_count.unwrap_or(0),
+      watchers: fetched_repository
+        .subscribers_count
+        .unwrap_or(0)
+        .try_into()?,
     })
   }
 }
