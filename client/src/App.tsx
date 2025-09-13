@@ -296,7 +296,7 @@ function App() {
                   <CardHeader className='flex-shrink-0'>
                     <div className='flex items-start justify-between'>
                       <CardTitle className='text-lg font-semibold'>
-                        {plugin.user}/{plugin.name}
+                        {plugin.name}
                       </CardTitle>
                       <a
                         href={`https://github.com/${plugin.user}/${plugin.name}`}
